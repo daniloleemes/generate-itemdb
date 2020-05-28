@@ -48,5 +48,6 @@ const itemInfo = itemInfo_lua.body[0].init[0].fields.map(item => {
 
 
 const missingItemInfo = itemInfo.filter(item => findIndex(itemDb, { ID: item.itemId }) < 0 && item.identifiedDescriptionName.length > 0)
+const missingDb = itemDb.filter(item => findIndex(itemInfo, { itemId: item.ID }) < 0)
 
 fs.writeFileSync('./missingItemDb.json', JSON.stringify(missingItemInfo));
