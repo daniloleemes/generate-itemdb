@@ -7,16 +7,13 @@ const itemInfo_lua = luaparse.parse(fs.readFileSync('./itemInfo_bro.lua', 'utf8'
 const itemDb_txt = fs.readFileSync('./item_db.txt', 'utf8');
 const columns = "ID,AegisName,Name,Type,Buy,Sell,Weight,AtkMatk,DEF,Range,Slots,Job,Class,Gender,Loc,wLV,eLVMaxLvl,Refineable,View,Script,OnEquip_Script,OnUnequip_Script".split(",")
 
-function getPosition(string, subString, index) {
-    return string.split(subString, index).join(subString).length;
-}
-
 const itemDb = itemDb_txt.split('\n').filter(line => !line.startsWith('/')).map(item => {
     try {
-        const firstColumns = item.substring(0, getPosition(item, ',', 19)).split(',')
-        const lastColumns = new RegExp(/(\{.*\}),(\{.*\}),(\{.*\})/gm).exec(item).splice(1)
+        const values = item.replace(/(\{[^,]*,.*?\})(?=,)/g, (m, p1) => p1.replace(/,/g, '\x01'))
+            .split(/,/)
+            .map(item => item.replace(/\x01/g, ','));
 
-        const itemObj = zipObject(columns, firstColumns.concat(lastColumns))
+        const itemObj = zipObject(columns, values)
         return {
             ...itemObj,
             ID: Number(itemObj.ID)
