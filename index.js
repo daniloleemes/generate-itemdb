@@ -1,9 +1,9 @@
 const luaparse = require('luaparse');
-const { zipObject, findIndex } = require('lodash');
+const { zipObject, findIndex, snakeCase } = require('lodash');
 const fs = require('fs');
 
 const accessoryId_lua = luaparse.parse(fs.readFileSync('./accessoryid.lua', 'utf8'));
-const itemInfo_lua = luaparse.parse(fs.readFileSync('./itemInfo_bro.lua', 'utf8'));
+const itemInfo_lua = luaparse.parse(fs.readFileSync('./itemInfo_6.lua', 'utf8'));
 const itemDb_txt = fs.readFileSync('./item_db.txt', 'utf8');
 const columns = "ID,AegisName,Name,Type,Buy,Sell,Weight,AtkMatk,DEF,Range,Slots,Job,Class,Gender,Loc,wLV,eLVMaxLvl,Refineable,View,Script,OnEquip_Script,OnUnequip_Script".split(",")
 
@@ -46,18 +46,22 @@ const itemInfo = itemInfo_lua.body[0].init[0].fields.map(item => {
     }
 })
 
-
 const missingItemInfo = itemInfo.filter(item => findIndex(itemDb, { ID: item.itemId }) < 0 && item.identifiedDescriptionName.length > 0)
 const missingDb = itemDb.filter(item => findIndex(itemInfo, { itemId: item.ID }) < 0)
 
 missingItemInfo.forEach(item => {
+    let itemDbLine = new Array(22).fill("");
     let itemDetails;
     item.identifiedDescriptionName.forEach((it, index) => {
         if (it.includes('Tipo: ')) {
             itemDetails = item.identifiedDescriptionName.splice(index);
-            break;
+            return;
         }
     })
+    itemDbLine[0] = item.itemId;
+    itemDbLine[1] = snakeCase(`CS_${item.identifiedDisplayName}`).toUpperCase();
+    itemDbLine[2] = item.identifiedDisplayName;
+
 })
 
-fs.writeFileSync('./missingItemDb.json', JSON.stringify(missingItemInfo));
+fs.writeFileSync('./missingItemDb_original_6.json', JSON.stringify(missingItemInfo));
